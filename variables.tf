@@ -6,6 +6,10 @@ variable "asg_arn" {
   description = "ARN of AutoscalingGroup to attach this Lambda function to"
 }
 
+variable "asg_name" {
+  description = "ARN of AutoscalingGroup to attach this Lambda function to"
+}
+
 variable "service" {
   description = "Name of service"
 }
