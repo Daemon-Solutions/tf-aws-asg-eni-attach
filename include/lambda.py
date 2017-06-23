@@ -25,6 +25,8 @@ asg_client = boto3.client('autoscaling', region_name=aws_region)
 
 def lambda_handler(event, context):
 
+    logger.debug('Event: {}'.format(event))
+
     if event["detail-type"] == "EC2 Instance-launch Lifecycle Action":
         instance_id = event["detail"]["EC2InstanceId"]
         logger.debug('Instance ID: {}'.format(instance_id))
