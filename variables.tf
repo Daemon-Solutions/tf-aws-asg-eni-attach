@@ -1,7 +1,3 @@
-variable "enis" {
-  description = "List of ENI IDs available for attachment"
-}
-
 variable "lambda_function_name" {}
 
 variable "cloudwatch_event_rule_name" {}
