@@ -28,7 +28,9 @@ resource "aws_lambda_function" "eni_attach" {
   publish          = true
 
   environment = {
-    LOG_LEVEL = "${var.lambda_log_level}"
-    ENI_TAG   = "${var.eni_tag}"
+    variables = {
+      LOG_LEVEL = "${var.lambda_log_level}"
+      ENI_TAG   = "${var.eni_tag}"
+    }
   }
 }
