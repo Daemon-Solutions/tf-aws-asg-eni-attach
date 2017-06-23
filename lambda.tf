@@ -16,7 +16,7 @@ data "archive_file" "lambda_package" {
 }
 
 ## create lambda function
-resource "aws_lambda_function" "volume_backup" {
+resource "aws_lambda_function" "eni_attach" {
   depends_on       = ["aws_cloudwatch_log_group.lambda_log_group"]
   filename         = ".terraform/tf-aws-asg-eni-attach-${md5(file("${path.module}/include/lambda.py"))}.zip"
   source_code_hash = "${data.archive_file.lambda_package.output_base64sha256}"
