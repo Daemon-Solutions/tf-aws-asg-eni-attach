@@ -26,4 +26,9 @@ resource "aws_lambda_function" "eni_attach" {
   runtime          = "python2.7"
   timeout          = "60"
   publish          = true
+
+  environment = {
+    LOG_LEVEL = "${var.lambda_log_level}"
+    ENI_TAG   = "${var.eni_tag}"
+  }
 }
