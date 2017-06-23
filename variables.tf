@@ -4,6 +4,8 @@ variable "enis" {
 
 variable "lambda_function_name" {}
 
+variable "cloudwatch_event_rule_name" {}
+
 variable "asg_name" {
   description = "Name of AutoscalingGroup to attach this Lambda function to"
 }
@@ -24,4 +26,13 @@ variable "envname" {}
 
 variable "lambda_logs_retention_in_days" {
   default = "30"
+}
+
+variable "aws_region" {
+  default = "eu-west-1"
+}
+
+variable "lambda_log_level" {
+  description = "Log level for lambda function. Valid options are those of python logging module: CRITICAL, ERROR, WARNING, INFO, DEBUG"
+  default     = "INFO"
 }
