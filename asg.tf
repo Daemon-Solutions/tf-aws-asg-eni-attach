@@ -1,13 +1,10 @@
-# ASG notification
-resource "aws_autoscaling_notification" "asg_notification" {
-  group_names = [
-    "${var.asg_name}",
-  ]
-
-  notifications = [
-    "autoscaling:TEST_NOTIFICATION",
-    "autoscaling:EC2_INSTANCE_LAUNCH",
-  ]
-
-  topic_arn = "${aws_sns_topic.asg_sns.arn}"
+# ASG lifecycle hook
+resource "aws_autoscaling_lifecycle_hook" "asg_hook" {
+  name                    = "${var.envname}-${var.service}-eni-attach-hook"
+  autoscaling_group_name  = "${var.asg_name}"
+  default_result          = "CONTINUE"
+  heartbeat_timeout       = 60
+  lifecycle_transition    = "autoscaling:EC2_INSTANCE_LAUNCHING"
+  notification_target_arn = "${aws_sns_topic.asg_sns.arn}"
+  role_arn                = "${aws_iam_role.asg_role.arn}"
 }

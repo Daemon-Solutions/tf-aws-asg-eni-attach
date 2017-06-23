@@ -1,6 +1,6 @@
 # Lambda role
 resource "aws_iam_role" "lambda_role" {
-  name = "${var.envname}-${var.service}-eni-attach-role"
+  name = "${var.envname}-${var.service}-eni-attach-lambda-role"
 
   assume_role_policy = <<EOF
 {
@@ -19,6 +19,7 @@ resource "aws_iam_role" "lambda_role" {
 EOF
 }
 
+# Lambda policy for managing logs
 resource "aws_iam_role_policy" "lambda_logging_policy" {
   name = "${var.envname}-${var.service}-lambda-eni-attach-logging"
   role = "${aws_iam_role.lambda_role.id}"
@@ -41,7 +42,7 @@ resource "aws_iam_role_policy" "lambda_logging_policy" {
 EOF
 }
 
-# Lambda policy for managing snapshots
+# Lambda policy for attaching ENI
 resource "aws_iam_role_policy" "lambda_eni_attach_policy" {
   name = "${var.envname}-${var.service}-lambda-eni-attach"
   role = "${aws_iam_role.lambda_role.id}"
@@ -68,6 +69,49 @@ resource "aws_iam_role_policy" "lambda_eni_attach_policy" {
 EOF
 }
 
+# ASG role
+resource "aws_iam_role" "asg_role" {
+  name = "${var.envname}-${var.service}-eni-attach-asg-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "autoscaling.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+# ASG policy granting ASG to publish to SNS topic
+resource "aws_iam_role_policy" "asg_publish_to_sns" {
+  name = "${var.envname}-${var.service}-lambda-eni-attach-asg-publish"
+  role = "${aws_iam_role.asg_role.id}"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+      "sns:Publish"
+      ],
+      "Resource": "${aws_sns_topic.asg_sns.arn}"
+    }
+  ]
+}
+EOF
+}
+
+# allow SNS topic to invoke function
 resource "aws_lambda_permission" "asg_sns" {
   statement_id  = "AllowExecutionFromSNS"
   action        = "lambda:InvokeFunction"
