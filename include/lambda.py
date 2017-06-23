@@ -4,56 +4,69 @@ import boto3
 import botocore
 from datetime import datetime
 import os
+import logging
 
-ec2_client = boto3.client('ec2')
-asg_client = boto3.client('autoscaling')
+# based on https://aws.amazon.com/premiumsupport/knowledge-center/attach-second-eni-auto-scaling/
+
+# get logger
+logger = logging.getLogger()
+logger.setLevel(os.environ['LOG_LEVEL'])
 
 # what tag should we look for
 eni_tag_name, eni_tag_value = os.environ['ENI_TAG'].split(':')
 
+# get current region, it is in ENV by default
+aws_region = os.environ['AWS_DEFAULT_REGION']
+
+# clients
+ec2_client = boto3.client('ec2', region_name=aws_region)
+asg_client = boto3.client('autoscaling', region_name=aws_region)
+
 
 def lambda_handler(event, context):
- 
+
     if event["detail-type"] == "EC2 Instance-launch Lifecycle Action":
         instance_id = event["detail"]["EC2InstanceId"]
+        logger.debug('Instance ID: {}'.format(instance_id))
+
         subnet_id = get_subnet_id(instance_id)
+        logger.debug('Subnet ID: {}'.format(subnet_id))
+
         interface_id = get_eni(subnet_id, eni_tag_name, eni_tag_value)
+        logger.debug('Interface ID: {}'.format(interface_id))
+
         attachment = attach_interface(interface_id, instance_id)
+        logger.debug('Attachment ID: {}'.format(attachment))
 
-        if interface_id == None or attachment == None:
+        # it any of the above is None we failed
+        if not (subnet_id and interface_id attachment):
+            logger.error('Failed to attach interface')
 
-            try:
-
-                asg_client.complete_lifecycle_action(
-                    LifecycleHookName = event['detail']['LifecycleHookName'],
-                    AutoScalingGroupName = event['detail']['AutoScalingGroupName'],
-                    LifecycleActionToken = event['detail']['LifecycleActionToken'],
-                    LifecycleActionResult = 'CONTINUE'
-                )
-  
-                log('{"Error": "1"}')
-
-
-            except botocore.exceptions.ClientError as e:
-
-                log("Error completing life cycle hook for instance {}: {}".format(instance_id, e.response['Error']['Code']))
-
-                log('{"Error": "1"}')
-        else:
-            log('{"Error": "0"}')
+        # complete lifecycle hook
+        try:
+            asg_client.complete_lifecycle_action(
+                LifecycleHookName=event['detail']['LifecycleHookName'],
+                AutoScalingGroupName=event['detail']['AutoScalingGroupName'],
+                LifecycleActionToken=event['detail']['LifecycleActionToken'],
+                LifecycleActionResult='CONTINUE'
+            )
+        except botocore.exceptions.ClientError as e:
+            logger.error('Error completing life cycle hook for instance {}: \
+                         {}'.format(instance_id, e.response['Error']['Code']))
 
 
 def get_subnet_id(instance_id):
 
+    vpc_subnet_id = None
+
     try:
         result = ec2_client.describe_instances(InstanceIds=[instance_id])
         vpc_subnet_id = result['Reservations'][0]['Instances'][0]['SubnetId']
-        log("Subnet id: {}".format(vpc_subnet_id))
 
     except botocore.exceptions.ClientError as e:
-        log("Error describing the instance {}: {}".format(instance_id, e.response['Error']['Code']))
-        vpc_subnet_id = None
-    
+        logger.error('Error describing instance {}: {}'.format(
+            instance_id, e.response['Error']['Code']))
+
     return vpc_subnet_id
 
 
@@ -63,49 +76,53 @@ def attach_interface(network_interface_id, instance_id):
 
     if network_interface_id and instance_id:
         try:
-            attach_interface = ec2_client.attach_network_interface(
+            result = ec2_client.attach_network_interface(
                 NetworkInterfaceId=network_interface_id,
                 InstanceId=instance_id,
                 DeviceIndex=1
             )
-            attachment = attach_interface['AttachmentId']
-
-            log("Created network attachment: {}".format(attachment))
+            attachment = result['AttachmentId']
+            logger.info("Created network attachment: {}".format(attachment))
 
         except botocore.exceptions.ClientError as e:
-            log("Error attaching network interface: {}".format(e.response['Error']['Code']))
-    
+            logger.error('Error attaching network interface: {}'.format(
+                e.response['Error']['Code']))
+
     return attachment
 
 
 def get_eni(subnet_id, eni_tag_name, eni_tag_value):
 
-    try:
-        response = ec2_client.describe_network_interfaces(
-            Filters=[
-                {
-                    'Name': 'subnet-id',
-                    'Values': [
-                        subnet_id,
-                    ]
-                },
-                {
-                    'Name': 'tag:{}'.format(eni_tag_name),
-                    'Values': [
-                        eni_tag_value
-                    ]
-                },
-                {
-                    'Name': 'status',
-                    'Values': [
-                        'available'
-                    ]
-                }
-            ]
-        )
-        eni_id = response['NetworkInterfaces'][0]['NetworkInterfaceId']
+    eni_id = None
 
-    except:
-        eni_id = None
+    if subnet_id:
+        try:
+            response = ec2_client.describe_network_interfaces(
+                Filters=[
+                    {
+                        'Name': 'subnet-id',
+                        'Values': [
+                            subnet_id,
+                        ]
+                    },
+                    {
+                        'Name': 'tag:{}'.format(eni_tag_name),
+                        'Values': [
+                            eni_tag_value
+                        ]
+                    },
+                    {
+                        'Name': 'status',
+                        'Values': [
+                            'available'
+                        ]
+                    }
+                ]
+            )
+            eni_id = response['NetworkInterfaces'][0]['NetworkInterfaceId']
+
+        except botocore.exceptions.ClientError as e:
+            logger.error('Failed to discover available ENIs: {}'.format(
+                    e.response['Error']['Code']))
 
     return eni_id
