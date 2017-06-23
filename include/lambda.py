@@ -3,16 +3,21 @@
 import boto3
 import botocore
 from datetime import datetime
+import os
 
 ec2_client = boto3.client('ec2')
 asg_client = boto3.client('autoscaling')
+
+# what tag should we look for
+eni_tag_name, eni_tag_value = os.environ['ENI_TAG'].split(':')
+
 
 def lambda_handler(event, context):
  
     if event["detail-type"] == "EC2 Instance-launch Lifecycle Action":
         instance_id = event["detail"]["EC2InstanceId"]
         subnet_id = get_subnet_id(instance_id)
-        interface_id = get_eni(subnet_id)
+        interface_id = get_eni(subnet_id, eni_tag_name, eni_tag_value)
         attachment = attach_interface(interface_id, instance_id)
 
         if interface_id == None or attachment == None:
@@ -73,7 +78,7 @@ def attach_interface(network_interface_id, instance_id):
     return attachment
 
 
-def get_eni(subnet_id):
+def get_eni(subnet_id, eni_tag_name, eni_tag_value):
 
     try:
         response = ec2_client.describe_network_interfaces(
@@ -85,9 +90,9 @@ def get_eni(subnet_id):
                     ]
                 },
                 {
-                    'Name': 'tag:Service',
+                    'Name': 'tag:{}'.format(eni_tag_name),
                     'Values': [
-                        service
+                        eni_tag_value
                     ]
                 },
                 {
