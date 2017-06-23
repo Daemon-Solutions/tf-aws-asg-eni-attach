@@ -13,5 +13,15 @@ variable "sns_topic_name" {
 }
 
 variable "service" {
-  description = "Name of service, used to filter ENIs by tag"
+  description = "Name of service"
+}
+
+variable "eni_tag" {
+  description = "Tag:Value to filter ENIs"
+}
+
+variable "envname" {}
+
+variable "lambda_logs_retention_in_days" {
+  default = "30"
 }
