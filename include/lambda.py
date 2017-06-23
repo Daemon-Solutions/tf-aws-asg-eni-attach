@@ -41,7 +41,7 @@ def lambda_handler(event, context):
         logger.debug('Attachment ID: {}'.format(attachment))
 
         # it any of the above is None we failed
-        if not (subnet_id and interface_id attachment):
+        if not (subnet_id and interface_id and attachment):
             logger.error('Failed to attach interface')
 
         # complete lifecycle hook
