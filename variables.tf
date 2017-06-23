@@ -6,8 +6,6 @@ variable "asg_arn" {
   description = "ARN of AutoscalingGroup to attach this Lambda function to"
 }
 
-variable "cloudwatch_event_rule_name" {}
-
 variable "service" {
   description = "Name of service"
 }
