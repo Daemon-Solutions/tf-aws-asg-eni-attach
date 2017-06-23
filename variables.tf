@@ -2,13 +2,11 @@ variable "lambda_function_name" {}
 
 variable "cloudwatch_event_rule_name" {}
 
-variable "asg_name" {
-  description = "Name of AutoscalingGroup to attach this Lambda function to"
+variable "asg_arn" {
+  description = "ARN of AutoscalingGroup to attach this Lambda function to"
 }
 
-variable "sns_topic_name" {
-  description = "Name for SNS topic"
-}
+variable "cloudwatch_event_rule_name" {}
 
 variable "service" {
   description = "Name of service"
@@ -22,10 +20,6 @@ variable "envname" {}
 
 variable "lambda_logs_retention_in_days" {
   default = "30"
-}
-
-variable "aws_region" {
-  default = "eu-west-1"
 }
 
 variable "lambda_log_level" {
