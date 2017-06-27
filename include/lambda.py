@@ -142,6 +142,8 @@ def get_eni(subnet_id, eni_tag_name, eni_tag_value):
                     ]
                     logger.debug('ENI {} is not available, waiting'.format(eni_id))
                     waiter.wait(Filters=waiter_filters)
+            else:
+                logger.error('No matching ENI found')
 
         except botocore.exceptions.ClientError as e:
             logger.error('Failed to discover available ENIs: {}'.format(
