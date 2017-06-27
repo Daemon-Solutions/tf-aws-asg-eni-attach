@@ -99,29 +99,49 @@ def get_eni(subnet_id, eni_tag_name, eni_tag_value):
 
     if subnet_id:
         try:
-            response = ec2_client.describe_network_interfaces(
-                Filters=[
-                    {
-                        'Name': 'subnet-id',
-                        'Values': [
-                            subnet_id,
-                        ]
-                    },
-                    {
-                        'Name': 'tag:{}'.format(eni_tag_name),
-                        'Values': [
-                            eni_tag_value
-                        ]
-                    },
-                    {
-                        'Name': 'status',
-                        'Values': [
-                            'available'
-                        ]
-                    }
-                ]
-            )
-            eni_id = response['NetworkInterfaces'][0]['NetworkInterfaceId']
+            waiter = ec2_client.get_waiter('network_interface_available')
+            waiter.config.delay = 2
+            waiter.config.max_attempts = 100
+            eni_filters = [
+                {
+                    'Name': 'subnet-id',
+                    'Values': [
+                        subnet_id,
+                    ]
+                },
+                {
+                    'Name': 'tag:{}'.format(eni_tag_name),
+                    'Values': [
+                        eni_tag_value,
+                    ]
+                }
+            ]
+
+            # is there ENI we want at all
+            response = ec2_client.describe_network_interfaces(Filters=eni_filters)
+            if response:
+                eni_id = response['NetworkInterfaces'][0]['NetworkInterfaceId']
+                logger.debug('Found ENI: {}'.format(eni_id))
+                if response['NetworkInterfaces'][0]['Status'] != 'available':
+                    # lets wait for ENI to become available.
+                    # it might be that previous instance
+                    # is still shutting down
+                    waiter_filters = [
+                        {
+                            'Name': 'network-interface-id',
+                            'Values': [
+                                eni_id,
+                            ]
+                        },
+                        {
+                            'Name': 'status',
+                            'Values': [
+                                'available',
+                            ]
+                        }
+                    ]
+                    logger.debug('ENI {} is not available, waiting'.format(eni_id))
+                    waiter.wait(Filters=waiter_filters)
 
         except botocore.exceptions.ClientError as e:
             logger.error('Failed to discover available ENIs: {}'.format(
