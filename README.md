@@ -2,7 +2,7 @@
 
 This module will attach ENI to instances in ASG based on tags. 
 Currently only one ENI per instance is supported.
-Attach of an additional network interface may require you to manually bring up the second interface, configure the private IPv4 address, and modify the route table accordingly. Instances running Amazon Linux or Windows Server automatically recognize the warm or hot attach and configure themselves. You may also try https://git.bashton.net/pawel/ec2-net-utils although it is not fully tested yet.
+Attach of an additional network interface may require you to manually bring up the second interface, configure the private IPv4 address, and modify the route table accordingly. Instances running Amazon Linux or Windows Server automatically recognize the warm or hot attach and configure themselves. You may also try https://git.bashton.net/Basthon/ec2-net-utils although it is not fully tested yet.
 
 
 ## Usage
