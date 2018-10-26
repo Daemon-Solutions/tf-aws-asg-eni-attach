@@ -33,3 +33,8 @@ variable "lifecycle_hook_default_result" {
   description = "Default behaviour for lifecycle hook. Valid values are ABANDON and CONTINUE"
   default     = "CONTINUE"
 }
+
+variable "lifecycle_hook_heartbeat_timeout" {
+  description = "Heartbeat timeout for lifecycle hook"
+  default     = "300"
+}
