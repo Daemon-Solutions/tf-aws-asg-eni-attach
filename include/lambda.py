@@ -9,7 +9,7 @@ import logging
 # based on https://aws.amazon.com/premiumsupport/knowledge-center/attach-second-eni-auto-scaling/
 
 # get logger
-logger = logging.getLogger()
+logger = logging.getLogger('lambda-eni-attach')
 logger.setLevel(os.environ['LOG_LEVEL'])
 
 # what tag should we look for
