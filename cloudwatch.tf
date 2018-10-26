@@ -12,7 +12,7 @@ resource "aws_cloudwatch_event_rule" "eni_attach" {
   ],
   "detail": {
     "AutoScalingGroupName": [
-      "${var.asg_arn}"
+      "${var.asg_name}"
     ],
     "LifecycleHookName": [
       "lambda-eni-attach"
