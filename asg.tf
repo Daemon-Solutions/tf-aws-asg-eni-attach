@@ -1,6 +1,6 @@
 # ASG lifecycle hook
 resource "aws_autoscaling_lifecycle_hook" "asg_hook" {
-  name                   = "${var.envname}-${var.service}-eni-attach-hook"
+  name                   = "lambda-eni-attach"
   autoscaling_group_name = "${var.asg_name}"
   default_result         = "${var.lifecycle_hook_default_result}"
   heartbeat_timeout      = 300
