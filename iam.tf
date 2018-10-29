@@ -1,6 +1,7 @@
 # Lambda role
 resource "aws_iam_role" "lambda_role" {
-  description = "${var.envname}-${var.service}lambda"
+  name_prefix = "asg-eni-attach-lambda-"
+  description = "Role used by lambda function that attaches ENI to ${var.service} ASG instances"
 
   assume_role_policy = <<EOF
 {
