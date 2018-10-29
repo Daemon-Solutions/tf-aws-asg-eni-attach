@@ -28,3 +28,13 @@ variable "lambda_log_level" {
   description = "Log level for lambda function. Valid options are those of python logging module: CRITICAL, ERROR, WARNING, INFO, DEBUG"
   default     = "INFO"
 }
+
+variable "lifecycle_hook_default_result" {
+  description = "Default behaviour for lifecycle hook. Valid values are ABANDON and CONTINUE"
+  default     = "CONTINUE"
+}
+
+variable "lifecycle_hook_heartbeat_timeout" {
+  description = "Heartbeat timeout for lifecycle hook"
+  default     = "300"
+}
