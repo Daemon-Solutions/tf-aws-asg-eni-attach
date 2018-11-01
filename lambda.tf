@@ -34,3 +34,21 @@ resource "aws_lambda_function" "eni_attach" {
     }
   }
 }
+
+resource "null_resource" "put_cloudwatch_event" {
+  triggers {
+    source_code_hash = "${data.archive_file.lambda_package.output_base64sha256}"
+    asg              = "${var.asg_name}"
+  }
+
+  depends_on = [
+    "aws_cloudwatch_event_rule.eni_attach",
+    "aws_cloudwatch_event_target.eni_attach",
+    "aws_autoscaling_lifecycle_hook.asg_hook",
+    "aws_lambda_function.eni_attach",
+  ]
+
+  provisioner "local-exec" {
+    command = "${path.module}/include/trigger.py ${var.asg_name} lambda-eni-attach ${data.aws_region.current.name}"
+  }
+}
