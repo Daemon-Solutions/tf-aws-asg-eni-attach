@@ -1,7 +1,7 @@
 resource "aws_cloudwatch_event_rule" "eni_attach" {
   name          = var.cloudwatch_event_rule_name
   description   = "Trigger for lambda ENI attach"
-  event_pattern = locals.event_pattern
+  event_pattern = local.event_pattern
 }
 
 resource "aws_cloudwatch_event_target" "eni_attach" {
