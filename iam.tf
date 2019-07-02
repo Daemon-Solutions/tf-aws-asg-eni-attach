@@ -18,11 +18,12 @@ resource "aws_iam_role" "lambda_role" {
   ]
 }
 EOF
+
 }
 
 # Lambda policy for managing logs
 resource "aws_iam_role_policy" "lambda_logging_policy" {
-  role = "${aws_iam_role.lambda_role.id}"
+  role = aws_iam_role.lambda_role.id
 
   policy = <<EOF
 {
@@ -40,13 +41,14 @@ resource "aws_iam_role_policy" "lambda_logging_policy" {
   ]
 }
 EOF
+
 }
 
 # Lambda policy for attaching ENI
 resource "aws_iam_role_policy" "lambda_eni_attach_policy" {
-  role = "${aws_iam_role.lambda_role.id}"
+role = aws_iam_role.lambda_role.id
 
-  policy = <<EOF
+policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -66,4 +68,6 @@ resource "aws_iam_role_policy" "lambda_eni_attach_policy" {
   ]
 }
 EOF
+
 }
+

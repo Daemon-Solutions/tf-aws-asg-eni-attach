@@ -1,6 +1,8 @@
-variable "lambda_function_name" {}
+variable "lambda_function_name" {
+}
 
-variable "cloudwatch_event_rule_name" {}
+variable "cloudwatch_event_rule_name" {
+}
 
 variable "asg_arn" {
   description = "ARN of AutoscalingGroup to attach this Lambda function to"
@@ -18,7 +20,8 @@ variable "eni_tag" {
   description = "Tag:Value to filter ENIs"
 }
 
-variable "envname" {}
+variable "envname" {
+}
 
 variable "lambda_logs_retention_in_days" {
   default = "30"
@@ -38,3 +41,4 @@ variable "lifecycle_hook_heartbeat_timeout" {
   description = "Heartbeat timeout for lifecycle hook"
   default     = "300"
 }
+

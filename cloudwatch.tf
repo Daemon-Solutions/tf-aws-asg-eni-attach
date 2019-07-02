@@ -1,7 +1,23 @@
 resource "aws_cloudwatch_event_rule" "eni_attach" {
-  name        = "${var.cloudwatch_event_rule_name}"
-  description = "Trigger for lambda ENI attach"
+  name          = var.cloudwatch_event_rule_name
+  description   = "Trigger for lambda ENI attach"
+  event_pattern = locals.event_pattern
+}
 
+resource "aws_cloudwatch_event_target" "eni_attach" {
+  rule = aws_cloudwatch_event_rule.eni_attach.name
+  arn  = aws_lambda_function.eni_attach.arn
+}
+
+resource "aws_lambda_permission" "allow_cloudwatch_to_call_eni-attach" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.eni_attach.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.eni_attach.arn
+}
+
+locals {
   event_pattern = <<PATTERN
 {
   "detail-type": [
@@ -20,17 +36,4 @@ resource "aws_cloudwatch_event_rule" "eni_attach" {
   }
 }
 PATTERN
-}
-
-resource "aws_cloudwatch_event_target" "eni_attach" {
-  rule = "${aws_cloudwatch_event_rule.eni_attach.name}"
-  arn  = "${aws_lambda_function.eni_attach.arn}"
-}
-
-resource "aws_lambda_permission" "allow_cloudwatch_to_call_eni-attach" {
-  statement_id  = "AllowExecutionFromCloudWatch"
-  action        = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.eni_attach.function_name}"
-  principal     = "events.amazonaws.com"
-  source_arn    = "${aws_cloudwatch_event_rule.eni_attach.arn}"
 }
