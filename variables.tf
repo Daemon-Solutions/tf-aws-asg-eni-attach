@@ -20,9 +20,6 @@ variable "eni_tag" {
   description = "Tag:Value to filter ENIs"
 }
 
-variable "envname" {
-}
-
 variable "lambda_logs_retention_in_days" {
   default = "30"
 }
@@ -41,4 +38,3 @@ variable "lifecycle_hook_heartbeat_timeout" {
   description = "Heartbeat timeout for lifecycle hook"
   default     = "300"
 }
-
