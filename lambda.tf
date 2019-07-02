@@ -1,37 +1,21 @@
-resource "aws_cloudwatch_log_group" "lambda_log_group" {
-  name              = var.lambda_function_name
-  retention_in_days = var.lambda_logs_retention_in_days
+# Lambda function
+module "lambda" {
+  source        = "github.com/claranet/terraform-aws-lambda?ref=v1.1.0"
+  function_name = var.lambda_function_name
+  description   = "Lambda function that attaches ENIs to ${var.service} ASG instances"
+  handler       = "lambda.lambda_handler"
+  runtime       = "python2.7"
+  timeout       = 300
+  source_path   = "${path.module}/include/lambda.py"
 
-  tags = {
-    environment = var.envname
-    service     = var.service
+  policy = {
+    json = data.aws_iam_policy_document.lambda.json
   }
-}
 
-## create lambda package
-data "archive_file" "lambda_package" {
-  type        = "zip"
-  source_file = "${path.module}/include/lambda.py"
-  output_path = "${path.cwd}/.terraform/tf-aws-asg-eni-attach-${filemd5("${path.module}/include/lambda.py")}.zip"
-}
-
-## create lambda function
-resource "aws_lambda_function" "eni_attach" {
-  depends_on       = [aws_cloudwatch_log_group.lambda_log_group]
-  filename         = ".terraform/tf-aws-asg-eni-attach-${filemd5("${path.module}/include/lambda.py")}.zip"
-  source_code_hash = data.archive_file.lambda_package.output_base64sha256
-  function_name    = var.lambda_function_name
-  role             = aws_iam_role.lambda_role.arn
-  handler          = "lambda.lambda_handler"
-  runtime          = "python2.7"
-  timeout          = "60"
-  publish          = true
-
-  environment {
+  environment = {
     variables = {
       LOG_LEVEL = var.lambda_log_level
       ENI_TAG   = var.eni_tag
     }
   }
 }
-
