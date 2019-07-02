@@ -6,13 +6,13 @@ resource "aws_cloudwatch_event_rule" "eni_attach" {
 
 resource "aws_cloudwatch_event_target" "eni_attach" {
   rule = aws_cloudwatch_event_rule.eni_attach.name
-  arn  = aws_lambda_function.eni_attach.arn
+  arn  = module.lambda.function_arn
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_eni-attach" {
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.eni_attach.function_name
+  function_name = module.lambda.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.eni_attach.arn
 }
