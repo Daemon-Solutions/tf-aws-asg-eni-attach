@@ -6,4 +6,3 @@ resource "aws_autoscaling_lifecycle_hook" "asg_hook" {
   heartbeat_timeout      = var.lifecycle_hook_heartbeat_timeout
   lifecycle_transition   = "autoscaling:EC2_INSTANCE_LAUNCHING"
 }
-

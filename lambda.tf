@@ -2,7 +2,7 @@
 module "lambda" {
   source        = "github.com/claranet/terraform-aws-lambda?ref=v1.1.0"
   function_name = var.lambda_function_name
-  description   = "Lambda function that attaches ENIs to ${var.service} ASG instances"
+  description   = "Lambda function that attaches ENIs to instances in ${var.asg_name} ASG"
   handler       = "lambda.lambda_handler"
   runtime       = "python2.7"
   timeout       = 300

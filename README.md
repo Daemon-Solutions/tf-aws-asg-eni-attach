@@ -11,36 +11,33 @@ Usage
 
 ```
 # Create your ENIs
-resource "aws_network_interface" "tranzaxis_proxy_eni_a" {
-  subnet_id   = "${data.terraform_remote_state.corporate.app-access-vpc-private-subnets[0]}"
-  private_ips = ["192.168.135.20"]
+resource "aws_network_interface" "eni_a" {
+  subnet_id   = "subnet-123"
+  private_ips = ["192.168.0.10"]
 
   tags {
-    Name    = "tranzaxis_proxy_eni_a"
-    Service = "tranzaxis_proxy"
+    Name    = "eni_a"
+    Service = "important"
   }
 }
 
-resource "aws_network_interface" "tranzaxis_proxy_eni_b" {
-  subnet_id   = "${data.terraform_remote_state.corporate.app-access-vpc-private-subnets[1]}"
-  private_ips = ["192.168.135.84"]
+resource "aws_network_interface" "eni_b" {
+  subnet_id   = "subnet-456"
+  private_ips = ["192.168.0.110"]
 
   tags {
-    Name    = "tranzaxis_proxy_eni_b"
-    Service = "tranzaxis_proxy"
+    Name    = "eni_b"
+    Service = "important"
   }
 }
 
 # Attach ENIs to ASG instances
 module "attach_eni" {
   source                     = "../modules/tf-aws-asg-eni-attach"
-  envname                    = "${var.envname}"
-  service                    = "tranzaxis_proxy"
-  lambda_function_name       = "${var.envname}-tranzaxis-proxy-eni-attach"
-  cloudwatch_event_rule_name = "${var.envname}-tranzaxis-proxy-eni-attach"
-  asg_arn                    = "${module.tranzaxis_proxy.asg_arn}"
-  asg_name                   = "${module.tranzaxis_proxy.asg_name}"
-  eni_tag                    = "Service:tranzaxis_proxy"
+  lambda_function_name       = "${var.envname}-eni-attach"
+  cloudwatch_event_rule_name = "${var.envname}-eni-attach"
+  asg_name                   = "${module.important.asg_name}"
+  eni_tag                    = "Service:important"
   lambda_log_level           = "DEBUG"
 }
 ```
@@ -48,11 +45,6 @@ module "attach_eni" {
 Variables
 ---------
 _Variables marked with **[*]** are mandatory._
-
-###### Naming
-* `envname` - Used to build the name for resources created by this module (position 1). Also becomes the value for the `environment` tag. __[*]__
-* `service` - Used to build the name for resources created by this module (position 2). Also becomes the value for the `service` tag. __[*]__
-
 ###### Lambda
 * `lambda_function_name` - The name for the Lambda function that is created to attach the network interface(s). __[*]__
 * `lambda_log_level` - Log level for the Lambda function. Valid options are those of python logging module: `CRITICAL`, `ERROR`, `WARNING`, `INFO` and `DEBUG`. [Default: `INFO`]
@@ -61,7 +53,6 @@ _Variables marked with **[*]** are mandatory._
 * `eni_tag` - The tag and value to filter ENIs in the format of `tag:value`. __[*]__
 
 ###### Autoscale Group
-* `asg_arn` - The AWS ARN for the Autoscale group you wish to attach ENIs on. __[*]__
 * `asg_name` - The ID for the Autoscale group you wish to attach ENIs on. __[*]__
 
 
